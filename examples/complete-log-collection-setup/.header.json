@@ -1,0 +1,14 @@
+{
+  "title": {
+    "zh-Hans": "完整日志采集配置",
+    "en-US": "Complete Log Collection Setup"
+  },
+  "overview": {
+    "zh-Hans": "此示例演示如何创建完整的日志采集方案，包括SLS项目、日志库、机器组、Logtail配置及关联关系。",
+    "en-US": "This example demonstrates how to create a complete log collection solution including SLS project, log stores, machine groups, Logtail configs and attachments."
+  },
+  "description": {
+    "zh-Hans": "创建完整日志采集方案的示例，包含所有SLS资源",
+    "en-US": "Example for creating a complete log collection setup with all SLS resources"
+  }
+}

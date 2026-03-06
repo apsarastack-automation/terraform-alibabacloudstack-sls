@@ -1,0 +1,30 @@
+{
+  "project_id": {
+    "description": "The ID of the SLS project.",
+    "i18n": {
+      "zh-Hans": "SLS项目的ID。",
+      "en-US": "The ID of the SLS project."
+    }
+  },
+  "project_name": {
+    "description": "The name of the SLS project.",
+    "i18n": {
+      "zh-Hans": "SLS项目的名称。",
+      "en-US": "The name of the SLS project."
+    }
+  },
+  "log_store_name": {
+    "description": "The name of the SLS log store.",
+    "i18n": {
+      "zh-Hans": "SLS日志库的名称。",
+      "en-US": "The name of the SLS log store."
+    }
+  },
+  "log_store_id": {
+    "description": "The ID of the SLS log store.",
+    "i18n": {
+      "zh-Hans": "SLS日志库的ID。",
+      "en-US": "The ID of the SLS log store."
+    }
+  }
+}

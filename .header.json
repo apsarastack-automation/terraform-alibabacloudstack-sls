@@ -1,0 +1,14 @@
+{
+  "title": {
+    "zh-Hans": "SLS日志服务模块",
+    "en-US": "SLS Log Service Module"
+  },
+  "overview": {
+    "zh-Hans": "该模块用于在阿里云 Stack 上创建日志服务(SLS)项目、日志库、机器组、Logtail配置及索引，支持完整的日志采集和分析功能。",
+    "en-US": "This module is used to create Log Service (SLS) projects, log stores, machine groups, Logtail configurations and indexes on Alibaba Cloud Stack, supporting complete log collection and analysis capabilities."
+  },
+  "description": {
+    "zh-Hans": "用于创建SLS项目、日志库、机器组、Logtail配置和索引的Terraform模块",
+    "en-US": "Terraform module for creating SLS projects, log stores, machine groups, Logtail configurations and indexes"
+  }
+}

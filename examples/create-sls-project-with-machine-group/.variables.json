@@ -1,0 +1,61 @@
+{
+  "project_name": {
+    "description": "The name of the SLS project to create.",
+    "type": "string",
+    "optional": false,
+    "i18n": {
+      "zh-Hans": "要创建的SLS项目名称。",
+      "en-US": "The name of the SLS project to create."
+    }
+  },
+  "description": {
+    "description": "Description of the SLS project.",
+    "type": "string",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "SLS项目的描述。",
+      "en-US": "Description of the SLS project."
+    },
+    "default": "Terraform managed SLS project with machine groups"
+  },
+  "log_store_name": {
+    "description": "The name of the log store.",
+    "type": "string",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "日志库的名称。",
+      "en-US": "The name of the log store."
+    },
+    "default": "app-logs"
+  },
+  "machine_groups": {
+    "description": "Map of machine group names to their configurations.",
+    "type": "map(object)",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "机器组名称到其配置的映射。",
+      "en-US": "Map of machine group names to their configurations."
+    },
+    "default": "{}"
+  },
+  "logtail_configs": {
+    "description": "Map of logtail config names to their configurations.",
+    "type": "map(object)",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "Logtail配置名称到其配置的映射。",
+      "en-US": "Map of logtail config names to their configurations."
+    },
+    "default": "{}"
+  },
+  "logtail_attachments": {
+    "description": "Map of logtail attachment names to their configurations.",
+    "type": "map(object)",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "Logtail关联名称到其配置的映射。",
+      "en-US": "Map of logtail attachment names to their configurations."
+    },
+    "default": "{}"
+  }
+}

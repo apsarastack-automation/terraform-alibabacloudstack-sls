@@ -1,0 +1,14 @@
+{
+  "title": {
+    "zh-Hans": "创建带索引的SLS项目和日志库",
+    "en-US": "Create SLS Project with Log Store and Index"
+  },
+  "overview": {
+    "zh-Hans": "此示例演示如何创建SLS项目和日志库，并配置全文索引和字段搜索索引以实现日志的实时查询和分析。",
+    "en-US": "This example demonstrates how to create an SLS project and log store with full-text and field search indexes for real-time log query and analysis."
+  },
+  "description": {
+    "zh-Hans": "创建SLS项目、日志库并配置索引的示例",
+    "en-US": "Example for creating SLS project, log store with index configuration"
+  }
+}

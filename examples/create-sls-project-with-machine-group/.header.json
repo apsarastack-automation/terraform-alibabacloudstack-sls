@@ -1,0 +1,14 @@
+{
+  "title": {
+    "zh-Hans": "创建带机器组的SLS项目",
+    "en-US": "Create SLS Project with Machine Groups"
+  },
+  "overview": {
+    "zh-Hans": "此示例演示如何创建SLS项目、日志库，并配置机器组和Logtail配置以实现日志采集。",
+    "en-US": "This example demonstrates how to create an SLS project, log store, and configure machine groups and Logtail configs for log collection."
+  },
+  "description": {
+    "zh-Hans": "创建SLS项目并配置机器组和Logtail的示例",
+    "en-US": "Example for creating SLS project with machine groups and Logtail configs"
+  }
+}

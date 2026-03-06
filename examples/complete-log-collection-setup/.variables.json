@@ -1,0 +1,121 @@
+{
+  "project_name": {
+    "description": "The name of the SLS project to create or use",
+    "type": "string",
+    "optional": false,
+    "i18n": {
+      "zh-Hans": "要创建或使用的SLS项目名称",
+      "en-US": "The name of the SLS project to create or use"
+    }
+  },
+  "description": {
+    "description": "Description of the SLS project",
+    "type": "string",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "SLS项目的描述",
+      "en-US": "Description of the SLS project"
+    },
+    "default": "Terraform managed SLS project with complete log collection setup"
+  },
+  "log_store_name": {
+    "description": "The name of the log store.",
+    "type": "string",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "日志库的名称。",
+      "en-US": "The name of the log store."
+    },
+    "default": "app-logs"
+  },
+  "shard_count": {
+    "description": "The number of shards in the log store.",
+    "type": "number",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "日志库的分片数量。",
+      "en-US": "The number of shards in the log store."
+    },
+    "default": "2"
+  },
+  "retention_period": {
+    "description": "The data retention time (in days). Valid values: [1-3650].",
+    "type": "number",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "数据保留时间（天），有效值：[1-3650]。",
+      "en-US": "The data retention time (in days). Valid values: [1-3650]."
+    },
+    "default": "30"
+  },
+  "auto_split": {
+    "description": "Whether to automatically split a shard.",
+    "type": "bool",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "是否自动分裂分片。",
+      "en-US": "Whether to automatically split a shard."
+    },
+    "default": "true"
+  },
+  "max_split_shard_count": {
+    "description": "The maximum number of shards for automatic split.",
+    "type": "number",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "自动分裂的最大分片数。",
+      "en-US": "The maximum number of shards for automatic split."
+    },
+    "default": "64"
+  },
+  "full_text_index": {
+    "description": "Full text index configuration.",
+    "type": "object",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "全文索引配置。",
+      "en-US": "Full text index configuration."
+    },
+    "default": "null"
+  },
+  "field_search_indexes": {
+    "description": "List of field search index configurations.",
+    "type": "list(object)",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "字段搜索索引配置列表。",
+      "en-US": "List of field search index configurations."
+    },
+    "default": "[]"
+  },
+  "machine_groups": {
+    "description": "Map of machine group names to their configurations.",
+    "type": "map(object)",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "机器组名称到其配置的映射",
+      "en-US": "Map of machine group names to their configurations"
+    },
+    "default": "{}"
+  },
+  "logtail_configs": {
+    "description": "Map of logtail config names to their configurations.",
+    "type": "map(object)",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "Logtail配置名称到其配置的映射",
+      "en-US": "Map of logtail config names to their configurations"
+    },
+    "default": "{}"
+  },
+  "logtail_attachments": {
+    "description": "Map of logtail attachment names to their configurations.",
+    "type": "map(object)",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "Logtail关联名称到其配置的映射",
+      "en-US": "Map of logtail attachment names to their configurations"
+    },
+    "default": "{}"
+  }
+}
