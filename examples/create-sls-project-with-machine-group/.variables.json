@@ -30,7 +30,7 @@
   },
   "machine_groups": {
     "description": "Map of machine group names to their configurations.",
-    "type": "map(object)",
+    "type": "map(object({\n    identify_type = optional(string, \"ip\")\n    identify_list = list(string)\n    topic         = optional(string, \"\")\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "机器组名称到其配置的映射。",
@@ -40,7 +40,7 @@
   },
   "logtail_configs": {
     "description": "Map of logtail config names to their configurations.",
-    "type": "map(object)",
+    "type": "map(object({\n    input_type   = string\n    output_type  = string\n    input_detail = string\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "Logtail配置名称到其配置的映射。",
@@ -50,12 +50,52 @@
   },
   "logtail_attachments": {
     "description": "Map of logtail attachment names to their configurations.",
-    "type": "map(object)",
+    "type": "map(object({\n    logtail_config_name = string\n    machine_group_name  = string\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "Logtail关联名称到其配置的映射。",
       "en-US": "Map of logtail attachment names to their configurations."
     },
     "default": "{}"
+  },
+  "shard_count": {
+    "description": "The number of shards in the log store.",
+    "type": "number",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "日志库中的分片数量。",
+      "en-US": "The number of shards in the log store."
+    },
+    "default": "2"
+  },
+  "retention_period": {
+    "description": "The data retention time (in days). Valid values: [1-3650].",
+    "type": "number",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "数据保留时间（单位：天）。有效值：[1-3650]。",
+      "en-US": "The data retention time (in days). Valid values: [1–3650]."
+    },
+    "default": "30"
+  },
+  "auto_split": {
+    "description": "Whether to automatically split a shard.",
+    "type": "bool",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "是否自动拆分分片。",
+      "en-US": "Whether to automatically split a shard."
+    },
+    "default": "true"
+  },
+  "max_split_shard_count": {
+    "description": "The maximum number of shards for automatic split.",
+    "type": "number",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "自动拆分的最大分片数",
+      "en-US": "The maximum number of shards for automatic splitting."
+    },
+    "default": "64"
   }
 }

@@ -70,7 +70,7 @@
   },
   "full_text_index": {
     "description": "Full text index configuration.",
-    "type": "object",
+    "type": "object({\n    case_sensitive  = optional(bool, false)\n    include_chinese = optional(bool, false)\n    token           = optional(string, \"\")\n  })",
     "optional": true,
     "i18n": {
       "zh-Hans": "全文索引配置。",
@@ -80,7 +80,7 @@
   },
   "field_search_indexes": {
     "description": "List of field search index configurations.",
-    "type": "list(object)",
+    "type": "list(object({\n    name             = string\n    type             = optional(string, \"long\")\n    alias            = optional(string, null)\n    case_sensitive   = optional(bool, false)\n    include_chinese  = optional(bool, false)\n    token            = optional(string, null)\n    enable_analytics = optional(bool, true)\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "字段搜索索引配置列表。",
@@ -90,7 +90,7 @@
   },
   "machine_groups": {
     "description": "Map of machine group names to their configurations.",
-    "type": "map(object)",
+    "type": "map(object({\n    identify_type = optional(string, \"ip\")\n    identify_list = list(string)\n    topic         = optional(string, \"\")\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "机器组名称到其配置的映射",
@@ -100,7 +100,7 @@
   },
   "logtail_configs": {
     "description": "Map of logtail config names to their configurations.",
-    "type": "map(object)",
+    "type": "map(object({\n    input_type   = string\n    output_type  = string\n    input_detail = string\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "Logtail配置名称到其配置的映射",
@@ -110,12 +110,32 @@
   },
   "logtail_attachments": {
     "description": "Map of logtail attachment names to their configurations.",
-    "type": "map(object)",
+    "type": "map(object({\n    logtail_config_name = string\n    machine_group_name  = string\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "Logtail关联名称到其配置的映射",
       "en-US": "Map of logtail attachment names to their configurations"
     },
     "default": "{}"
+  },
+  "append_meta": {
+    "description": "Whether to append log meta automatically.",
+    "type": "bool",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "是否自动附加日志元数据。",
+      "en-US": "Whether to automatically append log metadata."
+    },
+    "default": "true"
+  },
+  "enable_web_tracking": {
+    "description": "Whether to enable Web Tracking.",
+    "type": "bool",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "是否启用网页跟踪。",
+      "en-US": "Whether to enable web tracking."
+    },
+    "default": "false"
   }
 }

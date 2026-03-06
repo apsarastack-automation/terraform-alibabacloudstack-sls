@@ -50,22 +50,62 @@
   },
   "full_text_index": {
     "description": "Full text index configuration.",
-    "type": "object",
+    "type": "object({\n    case_sensitive  = optional(bool, false)\n    include_chinese = optional(bool, false)\n    token           = optional(string, \"\")\n  })",
     "optional": true,
     "i18n": {
       "zh-Hans": "全文索引配置。",
       "en-US": "Full text index configuration."
     },
-    "default": "{ case_sensitive = false, token = \" #$$%^*\\r\\n\\t\" }"
+    "default": "{\n    case_sensitive = false\n    token          = \" #$%^*\r\n\t\"\n  }"
   },
   "field_search_indexes": {
     "description": "List of field search index configurations.",
-    "type": "list(object)",
+    "type": "list(object({\n    name             = string\n    type             = optional(string, \"long\")\n    alias            = optional(string, null)\n    case_sensitive   = optional(bool, false)\n    include_chinese  = optional(bool, false)\n    token            = optional(string, null)\n    enable_analytics = optional(bool, true)\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "字段搜索索引配置列表。",
       "en-US": "List of field search index configurations."
     },
     "default": "[]"
+  },
+  "auto_split": {
+    "description": "Whether to automatically split a shard.",
+    "type": "bool",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "是否自动拆分分片。",
+      "en-US": "Whether to automatically split a shard."
+    },
+    "default": "true"
+  },
+  "max_split_shard_count": {
+    "description": "The maximum number of shards for automatic split.",
+    "type": "number",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "自动拆分的最大分片数",
+      "en-US": "The maximum number of shards for automatic splitting."
+    },
+    "default": "64"
+  },
+  "append_meta": {
+    "description": "Whether to append log meta automatically.",
+    "type": "bool",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "是否自动附加日志元数据。",
+      "en-US": "Whether to automatically append log metadata."
+    },
+    "default": "true"
+  },
+  "enable_web_tracking": {
+    "description": "Whether to enable Web Tracking.",
+    "type": "bool",
+    "optional": true,
+    "i18n": {
+      "zh-Hans": "是否启用网页跟踪。",
+      "en-US": "Whether to enable web tracking."
+    },
+    "default": "false"
   }
 }

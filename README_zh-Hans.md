@@ -1,95 +1,77 @@
 # 阿里云日志服务（SLS）Terraform 模块
 
-该模块用于在阿里云 Stack 上创建 **SLS 项目、日志库及相关资源**。
+该模块用于在阿里云 Stack 上创建 **SLS 项目、单个日志库及相关资源**。
 
 ## 功能特性
 
-- 创建新的 SLS 项目
-- 自动创建一个或多个日志库（通过 `log_stores` 定义）
+- 创建新的 SLS 项目（如项目已存在，则复用）
+- 自动创建一个日志库（通过 `log_store_name` 指定）
+- 可选：配置日志库分片、保留周期、自动分裂等基础参数
+- 可选：配置日志库全文索引和字段搜索索引
 - 可选：创建机器组用于日志采集
-- 可选：创建 Logtail 配置和关联关系
-- 可选：配置日志库索引用于搜索/分析
+- 可选：创建 Logtail 配置及与机器组的关联关系
 
-> ⚠️ **注意**：本模块**不支持**使用已有 SLS 项目（即不接受 `project_name`）。如需为现有项目创建日志库，请使用其他模块或直接调用 `alibabacloudstack_log_store` 资源。
+> ⚠️ **注意**：本模块**不支持**同时创建多个日志库（即不支持 `log_stores` 映射结构）。如需管理多个日志库，请为每个日志库单独调用本模块或使用更高级的封装模块。
 
 ## 使用方法
 
-### 基础用法：创建 SLS 项目和日志库
+### 基础用法：创建 SLS 项目和单个日志库
 
-``hcl
+```hcl
 module "sls" {
   source = "<模块路径>"
 
-  project_name = "my-sls-project"
-  description  = "Terraform 管理的 SLS 项目"
-
-  log_stores = {
-    app_log = {
-      shard_count           = 3
-      retention_period      = 30
-      auto_split            = true
-      max_split_shard_count = 60
-    }
-    system_log = {
-      shard_count      = 2
-      retention_period = 7
-    }
-  }
+  project_name     = "my-sls-project"
+  description      = "Terraform 管理的 SLS 项目"
+  log_store_name   = "app_log"
+  shard_count      = 3
+  retention_period = 30
 }
 ```
 
 ### 高级用法：配置日志库索引
 
-``hcl
+```hcl
 module "sls" {
   source = "<模块路径>"
 
-  project_name = "my-sls-project"
-  description  = "Terraform 管理的 SLS 项目"
+  project_name     = "my-sls-project"
+  description      = "Terraform 管理的 SLS 项目"
+  log_store_name   = "app_log"
+  shard_count      = 3
+  retention_period = 30
 
-  log_stores = {
-    app_log = {
-      shard_count           = 3
-      retention_period      = 30
-      auto_split            = true
-      max_split_shard_count = 60
-      
-      full_text_index = {
-        case_sensitive = true
-        token          = " #$%^*\r\n\t"
-      }
-      
-      field_search_indexes = [
-        {
-          name             = "level"
-          type             = "text"
-          enable_analytics = true
-        },
-        {
-          name             = "request_id"
-          type             = "text"
-          enable_analytics = true
-        }
-      ]
-    }
+  full_text_index = {
+    case_sensitive  = true
+    include_chinese = true
+    token           = " #$%^*\r\n\t"
   }
+
+  field_search_indexes = [
+    {
+      name             = "level"
+      type             = "text"
+      enable_analytics = true
+    },
+    {
+      name             = "request_id"
+      type             = "text"
+      enable_analytics = true
+    }
+  ]
 }
 ```
 
 ### 高级用法：配置机器组和 Logtail
 
-```
+```hcl
 module "sls" {
   source = "<模块路径>"
 
-  project_name = "my-sls-project"
-  description  = "Terraform 管理的 SLS 项目"
-
-  log_stores = {
-    app_log = {
-      shard_count = 2
-    }
-  }
+  project_name     = "my-sls-project"
+  description      = "Terraform 管理的 SLS 项目"
+  log_store_name   = "app_log"
+  shard_count      = 2
 
   machine_groups = {
     web_servers = {
@@ -101,10 +83,8 @@ module "sls" {
 
   logtail_configs = {
     nginx_access = {
-      logstore    = "app_log"
-      input_type  = "file"
-      output_type = "LogService"
-      log_sample  = "127.0.0.1 - - [10/Oct/2023..."
+      input_type   = "file"
+      output_type  = "LogService"
       input_detail = jsonencode({
         logPath       = "/var/log/nginx"
         filePattern   = "access.log"
@@ -147,66 +127,86 @@ module "sls" {
 
 | 名称 | 描述 | 类型 | 默认值 | 必需 |
 |------|------|------|--------|------|
-| `project_name` | SLS 项目名称 | `string` | - | 是 |
-| `description` | SLS 项目描述 | `string` | `""` | 否 |
-| `log_stores` | 日志库配置映射（格式：`{ store_name = { ...config } }`） | `map(object)` | `{}` | 否 |
-| `machine_groups` | 机器组配置映射（格式：`{ group_name = { ...config } }`） | `map(object)` | `{}` | 否 |
-| `logtail_configs` | Logtail 配置映射（格式：`{ config_name = { ...config } }`） | `map(object)` | `{}` | 否 |
-| `logtail_attachments` | Logtail 关联配置映射（格式：`{ attach_name = { ...config } }`） | `map(object)` | `{}` | 否 |
+| `project_name` | **SLS 项目名称。如果项目不存在，将会创建；如果已存在，则复用。** | `string` | - | 是 |
+| `description` | SLS 项目的简要描述（仅在创建新项目时生效） | `string` | `""` | 否 |
+| `log_store_name` | 日志库名称 | `string` | `""` | 否 |
+| `shard_count` | 日志库分片数量（1–100） | `number` | `2` | 否 |
+| `retention_period` | 数据保留时间（天），取值范围：1–3650 | `number` | `30` | 否 |
+| `auto_split` | 是否启用分片自动分裂 | `bool` | `false` | 否 |
+| `max_split_shard_count` | 自动分裂允许的最大分片数（当 `auto_split = true` 时生效） | `number` | `64` | 否 |
+| `append_meta` | 是否自动附加日志元信息（如时间戳、客户端IP等） | `bool` | `true` | 否 |
+| `enable_web_tracking` | 是否启用 Web Tracking（用于前端日志采集） | `bool` | `false` | 否 |
+| `full_text_index` | 全文索引配置对象（详见下方结构说明） | `object` | `null` | 否 |
+| `field_search_indexes` | 字段搜索索引配置列表（详见下方结构说明） | `list(object)` | `[]` | 否 |
+| `machine_groups` | 机器组名称到其配置的映射（详见下方结构说明） | `map(object)` | `{}` | 否 |
+| `logtail_configs` | Logtail 配置名称到其配置的映射（详见下方结构说明） | `map(object)` | `{}` | 否 |
+| `logtail_attachments` | Logtail 关联名称到其配置的映射（详见下方结构说明） | `map(object)` | `{}` | 否 |
 
-#### 日志库对象结构
-
-| 名称 | 描述 | 类型 | 默认值 | 必需 |
-|------|------|------|--------|------|
-| `shard_count` | 分片数量 | `number` | - | 是 |
-| `retention_period` | 数据保留时间（天，1-3650） | `number` | `30` | 否 |
-| `auto_split` | 是否自动分裂分片 | `bool` | `false` | 否 |
-| `max_split_shard_count` | 自动分裂的最大分片数 | `number` | `64` | 否 |
-| `append_meta` | 是否自动附加日志元信息 | `bool` | `true` | 否 |
-| `enable_web_tracking` | 是否启用 Web Tracking | `bool` | `false` | 否 |
-| `full_text_index` | 全文索引配置（见下文） | `object` | `null` | 否 |
-| `field_search_indexes` | 字段搜索索引配置列表（见下文） | `list` | `[]` | 否 |
-
-#### 全文索引对象结构
+#### 全文索引对象结构（`full_text_index`）
 
 | 名称 | 描述 | 类型 | 默认值 | 必需 |
 |------|------|------|--------|------|
 | `case_sensitive` | 是否区分大小写 | `bool` | `false` | 否 |
-| `include_chinese` | 是否包含中文 | `bool` | `false` | 否 |
-| `token` | 分词字符串 | `string` | `""` | 否 |
+| `include_chinese` | 是否支持中文分词 | `bool` | `false` | 否 |
+| `token` | 自定义分词符字符串（支持空格、制表符、换行符及特殊字符） | `string` | `""` | 否 |
 
-#### 字段搜索索引对象结构
+#### 字段搜索索引对象结构（`field_search_indexes` 列表中每个元素）
 
 | 名称 | 描述 | 类型 | 默认值 | 必需 |
 |------|------|------|--------|------|
-| `name` | 字段名称 | `string` | - | 是 |
-| `type` | 字段类型（long, text, double, json） | `string` | `"long"` | 否 |
-| `alias` | 字段别名 | `string` | `""` | 否 |
-| `case_sensitive` | 是否区分大小写 | `bool` | `false` | 否 |
-| `include_chinese` | 是否包含中文 | `bool` | `false` | 否 |
-| `token` | 分词字符串 | `string` | `""` | 否 |
-| `enable_analytics` | 是否启用字段分析 | `bool` | `true` | 否 |
+| `name` | 字段名称（必须与日志内容中的字段名一致） | `string` | - | 是 |
+| `type` | 字段数据类型（可选值：`"long"`、`"text"`、`"double"`、`"json"`） | `string` | `"long"` | 否 |
+| `alias` | 字段别名（用于查询时简化字段名） | `string` | `null` | 否 |
+| `case_sensitive` | 是否区分大小写（仅对 `text` 类型有效） | `bool` | `false` | 否 |
+| `include_chinese` | 是否支持中文分词（仅对 `text` 类型有效） | `bool` | `false` | 否 |
+| `token` | 自定义分词符（仅对 `text` 类型有效） | `string` | `null` | 否 |
+| `enable_analytics` | 是否启用字段分析（开启后支持统计类查询，如 `count`、`avg`） | `bool` | `true` | 否 |
+
+#### 机器组对象结构（`machine_groups` 映射中每个值）
+
+| 名称 | 描述 | 类型 | 默认值 | 必需 |
+|------|------|------|--------|------|
+| `identify_type` | 识别方式（`"ip"` 表示按 IP 识别，`"userdefined"` 表示按自定义标识识别） | `string` | `"ip"` | 否 |
+| `identify_list` | 识别标识列表（如 IP 地址或用户自定义 ID） | `list(string)` | - | 是 |
+| `topic` | 主题（可用于日志路由和过滤） | `string` | `""` | 否 |
+
+#### Logtail 配置对象结构（`logtail_configs` 映射中每个值）
+
+| 名称 | 描述 | 类型 | 默认值 | 必需 |
+|------|------|------|--------|------|
+| `input_type` | 输入类型（必须为 `"file"` 或 `"plugin"`） | `string` | - | 是 |
+| `output_type` | 输出类型（必须为 `"LogService"`） | `string` | - | 是 |
+| `input_detail` | 输入配置详情（JSON 字符串，格式取决于 `input_type`） | `string` | - | 是 |
+
+#### Logtail 关联对象结构（`logtail_attachments` 映射中每个值）
+
+| 名称 | 描述 | 类型 | 默认值 | 必需 |
+|------|------|------|--------|------|
+| `logtail_config_name` | 已定义的 Logtail 配置名称（必须存在于 `logtail_configs` 中） | `string` | - | 是 |
+| `machine_group_name` | 已定义的机器组名称（必须存在于 `machine_groups` 中） | `string` | - | 是 |
 
 ### 输出变量
 
 | 名称 | 描述 |
 |------|------|
-| `project_name` | 创建的 SLS 项目名称 |
-| `project_id` | 创建的 SLS 项目 ID |
-| `log_store_names` | 创建的日志库名称列表 |
+| `project_id` | SLS 项目 ID（即项目名称，SLS 项目无独立 ID 字段） |
+| `project_name` | SLS 项目名称 |
+| `log_store_name` | 创建的 SLS 日志库名称 |
+| `log_store_id` | SLS 日志库 ID（即日志库名称，SLS 日志库无独立 ID 字段） |
 
 ## 示例
 
 更多使用场景请参见 [`examples/`](./examples) 目录：
-- `create-sls-project-with-logstore` - 创建新的 SLS 项目及日志库
-- `create-logstore-for-existing-project` - 为现有 SLS 项目创建日志库
-- `create-machine-group-for-existing-project` - 为现有 SLS 项目创建机器组
-- `create-logtail-config-for-existing-logstore` - 为现有日志库创建 Logtail 配置
-- `create-logstore-index-for-existing-logstore` - 为现有日志库创建索引
-- `complete-log-collection-setup` - 完整的日志采集方案，包含所有 SLS 资源
+- `create-sls-project-with-logstore` — 创建新项目及日志库
+- `create-logstore-for-existing-project` — 为现有项目创建日志库
+- `create-logstore-with-indexes` — 创建带全文及字段索引的日志库
+- `setup-log-collection` — 完整日志采集方案（含机器组 + Logtail 配置 + 关联）
 
 ## 注意事项
 
-- 本模块**总是创建新的 SLS 项目**，不支持操作已有实例。
-- 日志库的分片数量在创建后**不能减少**。
-- 日志库索引配置在创建后**不能修改**，除非重新创建索引。
+- 本模块**支持复用已有 SLS 项目**（通过指定 `project_name` 即可），并非强制创建新项目。
+- 日志库的 `shard_count` 在创建后**不可减少**；若启用 `auto_split`，则 `max_split_shard_count` 必须 ≥ `shard_count`。
+- `retention_period` 取值范围严格限制为 **1–3650 天**，超出将触发预检失败。
+- `full_text_index` 和 `field_search_indexes` 仅在首次创建日志库时生效；如需更新索引，需先删除再重建日志库（SLS 不支持索引热更新）。
+- `logtail_configs` 中的 `input_detail` 必须是合法 JSON 字符串；建议使用 `jsonencode()` 函数生成以确保格式正确。
+- `machine_groups.identify_list` 至少需包含一个有效标识（IP 或自定义 ID），否则部署失败。

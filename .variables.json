@@ -18,16 +18,6 @@
     },
     "default": ""
   },
-  "create_log_store": {
-    "description": "Whether to create a log store.",
-    "type": "bool",
-    "optional": true,
-    "i18n": {
-      "zh-Hans": "是否创建日志库。",
-      "en-US": "Whether to create a log store."
-    },
-    "default": "true"
-  },
   "log_store_name": {
     "description": "The name of the log store.",
     "type": "string",
@@ -36,7 +26,7 @@
       "zh-Hans": "日志库的名称。",
       "en-US": "The name of the log store."
     },
-    "default": "\"\""
+    "default": ""
   },
   "shard_count": {
     "description": "The number of shards in the log store.",
@@ -100,7 +90,7 @@
   },
   "full_text_index": {
     "description": "Full text index configuration.",
-    "type": "object",
+    "type": "object({\n    case_sensitive  = optional(bool, false)\n    include_chinese = optional(bool, false)\n    token           = optional(string, \"\")\n  })",
     "optional": true,
     "i18n": {
       "zh-Hans": "全文索引配置。",
@@ -110,7 +100,7 @@
   },
   "field_search_indexes": {
     "description": "List of field search index configurations.",
-    "type": "list(object)",
+    "type": "list(object({\n    name             = string\n    type             = optional(string, \"long\")\n    alias            = optional(string, null)\n    case_sensitive   = optional(bool, false)\n    include_chinese  = optional(bool, false)\n    token            = optional(string, null)\n    enable_analytics = optional(bool, true)\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "字段搜索索引配置列表。",
@@ -120,7 +110,7 @@
   },
   "machine_groups": {
     "description": "Map of machine group names to their configurations.",
-    "type": "map(object)",
+    "type": "map(object({\n    identify_type = optional(string, \"ip\")\n    identify_list = list(string)\n    topic         = optional(string, \"\")\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "机器组名称到其配置的映射",
@@ -130,7 +120,7 @@
   },
   "logtail_configs": {
     "description": "Map of logtail config names to their configurations.",
-    "type": "map(object)",
+    "type": "map(object({\n    input_type   = string\n    output_type  = string\n    input_detail = string\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "Logtail配置名称到其配置的映射",
@@ -140,7 +130,7 @@
   },
   "logtail_attachments": {
     "description": "Map of logtail attachment names to their configurations.",
-    "type": "map(object)",
+    "type": "map(object({\n    logtail_config_name = string\n    machine_group_name  = string\n  }))",
     "optional": true,
     "i18n": {
       "zh-Hans": "Logtail关联名称到其配置的映射",

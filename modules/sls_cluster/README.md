@@ -1,184 +1,180 @@
+=====
 # Alibaba Cloud Log Service (SLS) Terraform Module
 
-This module manages Alibaba Cloud Log Service (SLS) projects and related resources on Alibaba Cloud Stack, supporting:
-- **Creating a new SLS project** and configuring log stores
-- **Creating log stores for an existing SLS project**
-- **Configuring machine groups** for log collection
-- **Creating Logtail configurations** and attachments
-- **Setting up log store indexes** for search and analytics
+This module creates and manages Log Service (SLS) projects and core log collection & analysis resources on Alibaba Cloud Stack. It supports:
 
-## Supported Resources
+- **Creating a new SLS project** with a single logstore  
+- **Creating a logstore in an existing SLS project** (by specifying an already-existing project name)  
+- **Configuring logstore indexes** (full-text index + field-based index) to enable efficient search and analytics  
+- **Creating machine groups**, for unified management of log collection sources  
+- **Defining Logtail configurations**, and establishing their associations with machine groups (*Logtail Attachments*)
 
-* [alibabacloudstack_log_project](https://registry.terraform.io/providers/aliyun/alibabacloudstack/latest/docs/resources/log_project)
-* [alibabacloudstack_log_store](https://registry.terraform.io/providers/aliyun/alibabacloudstack/latest/docs/resources/log_store)
-* [alibabacloudstack_log_store_index](https://registry.terraform.io/providers/aliyun/alibabacloudstack/latest/docs/resources/log_store_index)
-* [alibabacloudstack_log_machine_group](https://registry.terraform.io/providers/aliyun/alibabacloudstack/latest/docs/resources/log_machine_group)
-* [alibabacloudstack_logtail_config](https://registry.terraform.io/providers/aliyun/alibabacloudstack/latest/docs/resources/logtail_config)
-* [alibabacloudstack_logtail_attachment](https://registry.terraform.io/providers/aliyun/alibabacloudstack/latest/docs/resources/logtail_attachment)
+> ⚠️ **Important Notice**: This module **supports only a single logstore** (`log_store_name`) — it does *not* support batch creation of multiple logstores (i.e., the `log_stores` map variable is *not supported*). For multi-logstore scenarios, invoke this module multiple times.
 
-## Usage Examples
+## Features
 
-### Scenario 1: Create a new SLS project and log stores
+- ✅ Create or reuse an SLS Project  
+- ✅ Create a single Logstore, with fine-grained configuration including shard count, retention period, and auto-splitting  
+- ✅ Flexible Logstore indexing: supports full-text indexing (*Full Text*) and structured field-based indexing (*Field Search*)  
+- ✅ Define machine groups (IP-based or user-defined identifier type), supporting multiple concurrent groups  
+- ✅ Declaratively define Logtail collection configurations (*File* or *Plugin* type), enforcing output to Log Service  
+- ✅ Establish associations (*Attachments*) between Logtail configurations and machine groups, supporting many-to-many mappings  
+- ✅ Built-in comprehensive validation: all critical input parameters include `precondition` checks to ensure deployment robustness  
+
+## Usage
+
+### Basic Usage: Create a New Project and Logstore
 
 ```hcl
 module "sls" {
-  source = "./terraform-alibabacloudstack-sls"
+  source = "<Module Path>"
 
-  project_name = "my-sls-project"
-  description  = "Terraform managed SLS project"
-  
-  log_stores = {
-    app_log = {
-      shard_count      = 3
-      retention_period = 30
-    }
-    system_log = {
-      shard_count      = 2
-      retention_period = 7
-    }
-  }
+  project_name     = "my-sls-project"
+  description      = "A Log Service project managed by Terraform"
+  log_store_name   = "app-logs"
+  shard_count      = 4
+  retention_period = 90
 }
 ```
 
-### Scenario 2: Create log stores for an existing SLS project
+### Advanced Usage: Create an Indexed Logstore in an Existing Project
 
 ```hcl
 module "sls" {
-  source = "./terraform-alibabacloudstack-sls"
+  source = "<Module Path>"
 
-  project_name = "existing-sls-project"
-  
-  log_stores = {
-    new_logstore = {
-      shard_count = 2
-    }
+  project_name = "existing-project-name"  # Reference to an existing project
+  log_store_name = "audit-logs"
+
+  # Full-text index configuration
+  full_text_index = {
+    case_sensitive  = true
+    include_chinese = true
+    token           = " ,;=()\t\n"
   }
+
+  # Field-based index configuration
+  field_search_indexes = [
+    {
+      name             = "status"
+      type             = "long"
+      enable_analytics = true
+    },
+    {
+      name             = "service"
+      type             = "text"
+      case_sensitive   = false
+      include_chinese  = true
+    }
+  ]
 }
 ```
 
-### Scenario 3: Create SLS project with log store index
+### Advanced Usage: End-to-End Log Collection Pipeline (Machine Group + Logtail + Attachment)
 
 ```hcl
 module "sls" {
-  source = "./terraform-alibabacloudstack-sls"
+  source = "<Module Path>"
 
-  project_name = "my-sls-project"
-  description  = "Terraform managed SLS project"
-  
-  log_stores = {
-    app_log = {
-      shard_count = 3
-      full_text_index = {
-        case_sensitive = true
-        token          = " #$%^*\r\n\t"
-      }
-      field_search_indexes = [
-        {
-          name             = "level"
-          type             = "text"
-          enable_analytics = true
-        }
-      ]
-    }
-  }
-}
-```
+  project_name = "prod-logs"
+  log_store_name = "nginx-access"
 
-### Scenario 4: Create with machine group and Logtail config
-
-```hcl
-module "sls" {
-  source = "./terraform-alibabacloudstack-sls"
-
-  project_name = "my-sls-project"
-  
-  log_stores = {
-    app_log = {
-      shard_count = 2
-    }
-  }
-
+  # Define machine group: IP-based server cluster
   machine_groups = {
-    web_servers = {
+    nginx_servers = {
       identify_type = "ip"
-      identify_list = ["10.0.0.1", "10.0.0.2"]
+      identify_list = ["192.168.1.10", "192.168.1.11", "192.168.1.12"]
+      topic         = "nginx"
     }
   }
 
+  # Define Logtail configuration: collect Nginx access logs
   logtail_configs = {
-    nginx_access = {
-      logstore     = "app_log"
+    nginx_access_config = {
       input_type   = "file"
       output_type  = "LogService"
-      input_detail = file("config.json")
+      input_detail = jsonencode({
+        file_path = "/var/log/nginx/access.log"
+        log_type  = "common_regexp"
+        regex     = "^([^ ]+) ([^ ]+) ([^ ]+) \\[([^\\]]+)\\] \"([^\\\"]+)\" ([^ ]+) ([^ ]+) \"([^\\\"]+)\" \"([^\\\"]+)\""
+        keys      = ["remote_addr", "remote_user", "body_bytes_sent", "time_local", "request", "status", "request_time", "http_referer", "http_user_agent"]
+      })
     }
   }
 
+  # Associate Logtail configuration with machine group
   logtail_attachments = {
-    nginx_to_web = {
-      logtail_config_name = "nginx_access"
-      machine_group_name  = "web_servers"
+    attach_nginx_to_servers = {
+      logtail_config_name = "nginx_access_config"
+      machine_group_name  = "nginx_servers"
     }
   }
 }
 ```
 
-> ⚠️ **Key Constraints**:
-> - `project_name` is always required to specify the project to work with.
-> - Log store shard count cannot be decreased after creation.
+## Environment Dependencies
 
-## Requirements
+### Terraform Core
 
-| Name | Version |
-|------|---------|
-| terraform | >= 1.5.6 |
+| Name      | Version     |
+|-----------|-------------|
+| Terraform | `>= 1.5.6`  |
 
-## Providers
+### Provider
 
-| Name | Version |
-|------|---------|
-| alibabacloudstack | >= 3.18.24, < 3.19.0 |
+| Name              | Version                    |
+|-------------------|----------------------------|
+| alibabacloudstack | `>= 3.18.24, < 3.19.0`     |
 
-## Input Variables
+## Module Variables
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| **project_name** | **Name of the SLS project. If the project doesn't exist, it will be created.** | `string` | `""` | Yes |
-| description | Brief description of the SLS project (applies only when creating a new project) | `string` | `""` | No |
-| log_stores | Map of log store names to their configurations | `map(object)` | `{}` | No |
-| machine_groups | Map of machine group names to their configurations | `map(object)` | `{}` | No |
-| logtail_configs | Map of logtail config names to their configurations | `map(object)` | `{}` | No |
-| logtail_attachments | Map of logtail attachment names to their configurations | `map(object)` | `{}` | No |
+### Input Variables
 
-## Output Values
+| Name                      | Description                                                                                                                               | Type                                                                                                                                                   | Default | Required |
+|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|---------|----------|
+| `project_name`            | **Name of the SLS project. If the project does not exist, it will be automatically created.**                                             | `string`                                                                                                                                               | —       | Yes      |
+| `description`             | Brief description of the SLS project (takes effect only when creating a new project)                                                      | `string`                                                                                                                                               | `""`    | No       |
+| `log_store_name`          | **Name of the logstore.**                                                                                                                 | `string`                                                                                                                                               | —       | Yes      |
+| `shard_count`             | Initial number of shards for the logstore (valid range: 1–100)                                                                          | `number`                                                                                                                                               | `2`     | No       |
+| `retention_period`        | Number of days to retain log data (valid range: 1–3650)                                                                                 | `number`                                                                                                                                               | `30`    | No       |
+| `auto_split`              | Whether to enable automatic shard splitting                                                                                               | `bool`                                                                                                                                                 | `false` | No       |
+| `max_split_shard_count`   | Maximum number of shards allowed for automatic splitting (only effective when `auto_split = true`)                                      | `number`                                                                                                                                               | `64`    | No       |
+| `append_meta`             | Whether to automatically append log metadata fields (e.g., `__topic__`, `__source__`, etc.)                                              | `bool`                                                                                                                                                 | `true`  | No       |
+| `enable_web_tracking`     | Whether to enable Web Tracking (for frontend log collection)                                                                              | `bool`                                                                                                                                                 | `false` | No       |
+| `full_text_index`         | Full-text index configuration object (`null` disables full-text index creation)                                                           | `object({ case_sensitive = optional(bool), include_chinese = optional(bool), token = optional(string) })`                                            | `null`  | No       |
+| `field_search_indexes`    | List of field-based index configurations (empty list disables field index creation)                                                     | `list(object({ name = string, type = optional(string), alias = optional(string), case_sensitive = optional(bool), include_chinese = optional(bool), token = optional(string), enable_analytics = optional(bool) }))` | `[]`    | No       |
+| `machine_groups`          | Map from machine group names to their configurations (key = group name; value = `{ identify_type, identify_list, topic }` object)      | `map(object({ identify_type = optional(string), identify_list = list(string), topic = optional(string) }))`                                         | `{}`    | No       |
+| `logtail_configs`         | Map from Logtail configuration names to their definitions (key = config name; value = `{ input_type, output_type, input_detail }` object) | `map(object({ input_type = string, output_type = string, input_detail = string }))`                                                                  | `{}`    | No       |
+| `logtail_attachments`     | Map from Logtail attachment names to their configurations (key = attachment name; value = `{ logtail_config_name, machine_group_name }` object) | `map(object({ logtail_config_name = string, machine_group_name = string }))`                                                                          | `{}`    | No       |
 
-| Name | Description |
-|------|-------------|
-| project_id | ID of the SLS project |
-| project_name | Name of the SLS project |
-| log_store_names | List of SLS log store names that were actually created |
+> 💡 **Key Constraints**:
+> - `shard_count` and `retention_period` cannot be *reduced* after logstore creation.  
+> - When `auto_split = true`, `max_split_shard_count` must be ≥ `shard_count`.  
+> - In `logtail_configs`, `input_type` accepts only `"file"` or `"plugin"`; `output_type` must be `"LogService"`.  
+> - In `machine_groups`, `identify_type` accepts only `"ip"` or `"userdefined"`.  
+> - In `logtail_attachments`, referenced `logtail_config_name` and `machine_group_name` must exactly match keys defined in `logtail_configs` and `machine_groups`, respectively — typos will cause `precondition` validation failures.
+
+### Output Variables
+
+| Name             | Description                                          |
+|------------------|------------------------------------------------------|
+| `project_id`     | SLS project ID (i.e., the project name)              |
+| `project_name`   | SLS project name                                     |
+| `log_store_name` | Name of the created SLS logstore                     |
+| `log_store_id`   | ID of the created SLS logstore (i.e., the logstore name) |
+
+## Examples
+
+For more usage scenarios, see the [`examples/`](./examples) directory:
+- `create-project-and-logstore`: Create a new project and basic logstore  
+- `create-logstore-with-indexes`: Create a logstore with full-text + field indexes in an existing project  
+- `setup-full-log-collection`: Configure machine groups, Logtail, and end-to-end attachments  
 
 ## Notes
 
-* When creating a log store with index configuration, the index will be automatically created after the log store is ready.
-* Machine groups are used to manage ECS instances for log collection via Logtail.
-
-## Reporting Issues
-
-If you encounter any issues while using this module, please open an issue in the [provider repository](https://github.com/aliyun/terraform-provider-alibabacloudstack/issues/new).
-
-> **Note**: Please do **not** open issues in this module's repository.
-
-## Authors
-
-Created and maintained by the Alibaba Cloud Terraform Team.
-
-## License
-
-MIT License. See LICENSE for details.
-
-## References
-
-* [Terraform Provider for Alibaba Cloud Stack (GitHub)](https://github.com/aliyun/terraform-provider-alibabacloudstack)
-* [Terraform Provider Registry](https://registry.terraform.io/providers/aliyun/alibabacloudstack)
-* [Provider Documentation](https://registry.terraform.io/providers/aliyun/alibabacloudstack/latest/docs)
+- ✅ This module **always operates on exactly one logstore**, specified via `log_store_name`; batch creation of multiple logstores is *not supported*.  
+- ⚠️ After logstore creation, `shard_count` can only be *increased*, not decreased; `retention_period` can only be *extended*, not shortened.  
+- ⚠️ `full_text_index` and `field_search_indexes` are applied *only upon initial logstore creation*. Subsequent modifications require manual re-indexing via the console or API — Terraform does *not* automatically update existing index schemas.  
+- ⚠️ `logtail_attachments` requires *exact key-name matching* against `logtail_configs` and `machine_groups`; any typo will cause `precondition` validation failure.  
+- ⚠️ When `append_meta = true`, system-injected metadata fields such as `__topic__`, `__source__`, and `__tag__:__hostname__` increase log volume and may impact query performance — enable only as needed.  
+- 🌐 All resources are deployed within the Alibaba Cloud Stack region configured in the current Terraform context — cross-region deployments are *not supported*.
