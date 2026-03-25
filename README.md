@@ -1,4 +1,3 @@
-=====
 # Alibaba Cloud Log Service (SLS) Terraform Module
 
 This module is used to create **SLS projects, individual logstores, and related resources** on Alibaba Cloud Stack.
