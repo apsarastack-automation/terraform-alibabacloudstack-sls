@@ -1,8 +1,19 @@
+# --- SLS Cluster Data Source ---
+
+data "alibabacloudstack_log_clusters" "default" {
+}
+
+locals {
+  # Determine the cluster name to use
+  effective_cluster_name = var.cluster_name != "" ? var.cluster_name : (length(data.alibabacloudstack_log_clusters.default) > 0 ? data.alibabacloudstack_log_clusters.default[0].name : "")
+}
+
 # --- SLS Project Resource ---
 
 resource "alibabacloudstack_log_project" "default" {
-  name        = var.project_name
-  description = var.description
+  name         = var.project_name
+  description  = var.description
+  cluster_name = local.effective_cluster_name
 }
 
 # --- SLS Log Store Resources ---

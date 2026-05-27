@@ -1,3 +1,13 @@
+run "setup" {
+  command = apply
+  module {
+    source = "../examples/complete-log-collection-setup"
+  }
+}
+
+
+
+
 run "validate" {
   command = apply
   module {
@@ -7,6 +17,7 @@ run "validate" {
     project_name          = "tf-sls-complete"
     description           = "Complete SLS setup test"
     create_log_store      = true
+    cluster_name          = run.setup.cluster_name
     log_store_name        = "app-logs"
     shard_count           = 2
     retention_period      = 30

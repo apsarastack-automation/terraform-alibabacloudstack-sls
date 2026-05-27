@@ -2,6 +2,7 @@ module "default" {
   source = "./modules/sls_cluster"
 
   project_name          = var.project_name
+  cluster_name          = var.cluster_name
   description           = var.description
   log_store_name        = var.log_store_name
   shard_count           = var.shard_count

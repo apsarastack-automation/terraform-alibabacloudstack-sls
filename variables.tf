@@ -3,6 +3,12 @@ variable "project_name" {
   type        = string
 }
 
+variable "cluster_name" {
+  description = "The name of the SLS cluster. If empty, will use the first cluster from data source."
+  type        = string
+  default     = ""
+}
+
 variable "description" {
   description = "A brief description of the SLS project."
   type        = string
