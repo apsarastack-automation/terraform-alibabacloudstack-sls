@@ -5,7 +5,7 @@ data "alibabacloudstack_log_clusters" "default" {
 
 locals {
   # Determine the cluster name to use
-  effective_cluster_name = var.cluster_name != "" ? var.cluster_name : (length(data.alibabacloudstack_log_clusters.default) > 0 ? data.alibabacloudstack_log_clusters.default[0].name : "")
+  effective_cluster_name = var.cluster_name != "" ? var.cluster_name : (length(data.alibabacloudstack_log_clusters.default.clusters) > 0 ? data.alibabacloudstack_log_clusters.default.clusters[0].name : "")
 }
 
 # --- SLS Project Resource ---

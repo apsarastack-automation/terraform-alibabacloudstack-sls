@@ -1,7 +1,7 @@
 run "setup" {
   command = apply
   module {
-    source = "../examples/complete-log-collection-setup"
+    source = "./setup_cluster"
   }
 }
 
